@@ -5,7 +5,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  output: 'export', // 🧩 Thêm dòng này nè
+  //output: 'export', // 🧩 Thêm dòng này nè
 };
 
 export default nextConfig;

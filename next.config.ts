@@ -1,32 +1,11 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  /* config options here */
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'export', // 👈 xuất static site thay cho `next export`
   images: {
-    qualities: [25, 50, 75, 100],
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "api.suicaodex.com",
-        port: "",
-        pathname: "/covers/**",
-        search: "",
-      },
-      {
-        protocol: "https",
-        hostname: "api2.suicaodex.com",
-        port: "",
-        pathname: "/covers/**",
-        search: "",
-      },
-      {
-        protocol: "https",
-        hostname: "clf.suicaodex.com",
-        port: "",
-        pathname: "/covers/**",
-        search: "",
-      },
-    ],
+    unoptimized: true, // cần cho Cloudflare Pages
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 };
 

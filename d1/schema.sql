@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS stories (
     title TEXT,
     authors TEXT,
     description TEXT,
-    cover_r2_key TEXT
+    cover_url TEXT  -- ✅ thay vì cover_r2_key
 );
 
 CREATE TABLE IF NOT EXISTS chapters (
@@ -12,6 +12,6 @@ CREATE TABLE IF NOT EXISTS chapters (
     story_id INTEGER,
     number INTEGER,
     title TEXT,
-    r2_key TEXT,
+    content_url TEXT,  -- ✅ thay vì r2_key
     FOREIGN KEY (story_id) REFERENCES stories(id)
 );

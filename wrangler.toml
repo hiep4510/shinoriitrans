@@ -1,8 +1,0 @@
-name = "mato-reader"
-pages_build_output_dir = "./dist"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "mato_reader_d1"
-database_id = "eca225a7-54f9-4a1c-b907-adc1d91e558f"
-

@@ -1,13 +1,43 @@
 <!DOCTYPE html>
 <html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Mato Reader</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="/src/components/styles.css" />
-  </head>
-  <body class="bg-gray-100 text-gray-900">
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShinoriiTrans</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>🌸 Shinorii Translation 🌸</h1>
+    <p>Kho truyện dịch nhẹ nhàng, tự nhiên và sạch đẹp.</p>
+  </header>
+
+  <main>
+    <section class="stories">
+      <h2>📚 Danh sách truyện</h2>
+      <ul id="story-list">
+        <li>Đang tải danh sách truyện...</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 ShinoriiTrans – Powered by Cloudflare Pages 💫</p>
+  </footer>
+
+  <script>
+    // Lấy danh sách truyện từ API (ví dụ)
+    fetch('/api/stories')
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById('story-list');
+        list.innerHTML = data.length
+          ? data.map(s => `<li><a href="/chapter?slug=${s.slug}&number=1">${s.title}</a></li>`).join('')
+          : '<li>Chưa có truyện nào.</li>';
+      })
+      .catch(() => {
+        document.getElementById('story-list').innerHTML = '<li>Lỗi tải danh sách.</li>';
+      });
+  </script>
+</body>
 </html>

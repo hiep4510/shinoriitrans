@@ -1,4 +1,6 @@
-import type { MetadataRoute } from 'next'
+export const dynamic = 'force-static';
+
+import type { MetadataRoute } from 'next';
  
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -7,8 +9,6 @@ export default function manifest(): MetadataRoute.Manifest {
     description: '"Ứng dụng" đọc truyện đầu hàng Vi En',
     start_url: '/',
     display: 'standalone',
-    // background_color: '#ffffff',
-    // theme_color: '#000000',
     icons: [
       {
         src: '/icon/icon-192x192.png',
@@ -21,5 +21,5 @@ export default function manifest(): MetadataRoute.Manifest {
         type: 'image/png',
       },
     ],
-  }
+  };
 }

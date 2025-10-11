@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { serializeComment } from "@/lib/suicaodex/serializers";
+export const dynamic = 'force-static';
 
 export async function GET(_: NextRequest) {
   const [mangaComments, chapterComments] = await Promise.all([

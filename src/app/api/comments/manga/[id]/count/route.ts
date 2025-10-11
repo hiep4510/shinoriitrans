@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+export const dynamic = 'force-static';
 
 interface RouteParams {
   params: Promise<{

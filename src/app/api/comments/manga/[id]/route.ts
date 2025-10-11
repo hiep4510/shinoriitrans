@@ -4,6 +4,7 @@ import { serializeComment } from "@/lib/suicaodex/serializers";
 import { auth } from "@/auth";
 import { limiter, RateLimitError } from "@/lib/rate-limit";
 import { getContentLength } from "@/lib/utils";
+export const dynamic = 'force-static';
 
 interface RouteParams {
   params: Promise<{

@@ -1,11 +1,8 @@
 const nextConfig = {
-  experimental: {
-    runtime: 'edge',
-  },
+  output: 'export', // thêm dòng này
   eslint: {
     ignoreDuringBuilds: true,
   },
-  //output: 'export', // 🧩 Thêm dòng này nè
 };
 
 export default nextConfig;

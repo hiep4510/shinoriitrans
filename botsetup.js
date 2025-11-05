@@ -49,9 +49,8 @@ app.post("/webhook", (req, res) => {
   }
 });
 
-// ⚙️ Render cấp PORT tự động, không nên cố định 3000
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`🌐 Express server online on port ${PORT}`));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, "0.0.0.0", () => console.log(`🌐 Express server online on port ${PORT}`));
 
 // 🧠 Khởi tạo Discord bot
 const client = new Client({

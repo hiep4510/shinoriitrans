@@ -1,12 +1,11 @@
 {
-  "name": "template",
+  "name": "shinoriitrans",
   "version": "1.0.0",
-  "description": "",
-  "main": "setup.js",
+  "description": "Discord bot chính, không setup server",
+  "main": "bot.js",
   "type": "module",
   "scripts": {
-    "start": "node setup.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node bot.js"
   },
   "keywords": [],
   "author": "",

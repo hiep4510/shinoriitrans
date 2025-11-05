@@ -20,9 +20,15 @@ app.get("/webhook", (req, res) => {
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
 
-  if (mode === "subscribe" && token === VERIFY_TOKEN) {
-    console.log("🔔 Facebook Webhook verified!");
-    res.status(200).send(challenge);
+  console.log("📩 Webhook verification request received:", { mode, token, challenge });
+
+  if (mode && token === VERIFY_TOKEN) {
+    if (mode === "subscribe") {
+      console.log("✅ Facebook Webhook verified successfully!");
+      res.status(200).type("text/plain").send(challenge); // ⚡ phải trả về text/plain
+    } else {
+      res.sendStatus(400);
+    }
   } else {
     console.log("❌ Webhook verification failed!");
     res.sendStatus(403);
@@ -31,10 +37,11 @@ app.get("/webhook", (req, res) => {
 
 // 📬 Khi Facebook gửi thông báo bài viết mới (POST)
 app.post("/webhook", (req, res) => {
-  const body = req.body;
+  console.log("📨 Webhook POST received:", JSON.stringify(req.body, null, 2));
 
+  const body = req.body;
   if (body.object === "page") {
-    body.entry.forEach((entry) => {
+    body.entry?.forEach((entry) => {
       const changes = entry.changes || [];
       changes.forEach((change) => {
         if (change.field === "feed" && change.value?.item === "post") {
@@ -56,7 +63,7 @@ app.listen(PORT, "0.0.0.0", () => console.log(`🌐 Express server online on por
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers, // để bot thấy member mới
+    GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
   ],
 });
@@ -79,9 +86,7 @@ client.on("guildMemberAdd", async (member) => {
     );
   }
 
-  const role = member.guild.roles.cache.find((r) =>
-    r.name.includes("Reader / Fan")
-  );
+  const role = member.guild.roles.cache.find((r) => r.name.includes("Reader / Fan"));
 
   if (role) {
     try {

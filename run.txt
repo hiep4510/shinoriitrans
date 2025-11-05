@@ -1,0 +1,3 @@
+npm init -y
+npm install discord.js dotenv
+node setup.js

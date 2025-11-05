@@ -1,0 +1,59 @@
+{
+  "name": "Manga Translation & Fandom Hub",
+  "description": "Server mẫu dành cho nhóm dịch manga và cộng đồng fan giao lưu, thảo luận, và chia sẻ.",
+  "channels": [
+    {
+      "name": "📢・INFORMATION",
+      "type": "category",
+      "channels": [
+        { "name": "📜・rules", "type": "text" },
+        { "name": "📢・announcements", "type": "text" },
+        { "name": "🎉・welcome", "type": "text" },
+        { "name": "❓・faq", "type": "text" }
+      ]
+    },
+    {
+      "name": "💬・COMMUNITY",
+      "type": "category",
+      "channels": [
+        { "name": "💭・general-chat", "type": "text" },
+        { "name": "😂・memes", "type": "text" },
+        { "name": "📚・manga-discussion", "type": "text" },
+        { "name": "💘・ship-corner", "type": "text" },
+        { "name": "🎨・fanart", "type": "text" },
+        { "name": "📢・release-feed", "type": "text" }
+      ]
+    },
+    {
+      "name": "🔊・VOICE CHANNELS",
+      "type": "category",
+      "channels": [
+        { "name": "🎙️・general-voice", "type": "voice" },
+        { "name": "🎧・music-room", "type": "voice" }
+      ]
+    },
+    {
+      "name": "🧰・STAFF AREA",
+      "type": "category",
+      "channels": [
+        { "name": "🗂️・staff-chat", "type": "text" },
+        { "name": "📝・translation", "type": "text" },
+        { "name": "🎨・editing", "type": "text" },
+        { "name": "🔍・qc-proof", "type": "text" },
+        { "name": "📤・release-prep", "type": "text" },
+        { "name": "🚨・mod-log", "type": "text" },
+        { "name": "🧹・admin-room", "type": "text" }
+      ]
+    }
+  ],
+  "roles": [
+    { "name": "👑 Admin", "color": "#ff4757", "permissions": ["Administrator"] },
+    { "name": "🛠️ Mod", "color": "#ffa502" },
+    { "name": "🈶 Translator", "color": "#1abc9c" },
+    { "name": "🖋️ Editor", "color": "#3498db" },
+    { "name": "👁️ QC / Proofreader", "color": "#9b59b6" },
+    { "name": "📢 PR / Social Media", "color": "#e67e22" },
+    { "name": "🎨 Fan Artist", "color": "#e84393" },
+    { "name": "💬 Reader / Fan", "color": "#2ecc71" }
+  ]
+}

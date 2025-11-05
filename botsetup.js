@@ -9,9 +9,10 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-app.get("/", (req, res) => res.send("Bot setup is running!"));
+// 🟢 Root endpoint
+app.get("/", (req, res) => res.send("✅ Bot setup is running!"));
 
-// ✅ Xác minh Webhook của Facebook
+// ✅ Xác minh Webhook của Facebook (bước Verify Token)
 const VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN;
 
 app.get("/webhook", (req, res) => {
@@ -23,18 +24,19 @@ app.get("/webhook", (req, res) => {
     console.log("🔔 Facebook Webhook verified!");
     res.status(200).send(challenge);
   } else {
+    console.log("❌ Webhook verification failed!");
     res.sendStatus(403);
   }
 });
 
-// 📬 Khi Facebook gửi thông báo bài viết mới
+// 📬 Khi Facebook gửi thông báo bài viết mới (POST)
 app.post("/webhook", (req, res) => {
   const body = req.body;
 
   if (body.object === "page") {
-    body.entry.forEach(entry => {
+    body.entry.forEach((entry) => {
       const changes = entry.changes || [];
-      changes.forEach(change => {
+      changes.forEach((change) => {
         if (change.field === "feed" && change.value?.item === "post") {
           handleNewPost(change.value);
         }
@@ -47,8 +49,9 @@ app.post("/webhook", (req, res) => {
   }
 });
 
-app.listen(3000, () => console.log("🌐 Express server online!"));
-
+// ⚙️ Render cấp PORT tự động, không nên cố định 3000
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`🌐 Express server online on port ${PORT}`));
 
 // 🧠 Khởi tạo Discord bot
 const client = new Client({
@@ -63,12 +66,10 @@ client.once("ready", () => {
   console.log(`✅ Bot đăng nhập: ${client.user.tag}`);
 });
 
-
 // 👋 Khi có thành viên mới
 client.on("guildMemberAdd", async (member) => {
   console.log(`👤 Thành viên mới: ${member.user.tag}`);
 
-  // Tìm kênh welcome
   const welcomeChannel = member.guild.channels.cache.find((ch) =>
     ch.name.toLowerCase().includes("welcome")
   );
@@ -79,7 +80,6 @@ client.on("guildMemberAdd", async (member) => {
     );
   }
 
-  // Tìm role "💬 Reader / Fan"
   const role = member.guild.roles.cache.find((r) =>
     r.name.includes("Reader / Fan")
   );
@@ -96,8 +96,7 @@ client.on("guildMemberAdd", async (member) => {
   }
 });
 
-
-// 📰 Hàm gửi thông báo khi fanpage đăng bài
+// 📰 Gửi thông báo khi fanpage đăng bài mới
 async function handleNewPost(value) {
   try {
     const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID);
@@ -108,7 +107,7 @@ async function handleNewPost(value) {
       return console.warn("⚠️ Channel không phải TextChannel hoặc không tìm thấy");
     }
 
-    const role = guild.roles.cache.find(r => r.name.includes("Reader / Fan"));
+    const role = guild.roles.cache.find((r) => r.name.includes("Reader / Fan"));
     const mention = role ? `<@&${role.id}>` : "";
 
     const postId = value.post_id || value.id;
@@ -116,13 +115,11 @@ async function handleNewPost(value) {
     const message = value.message || "Fanpage vừa đăng một bài viết mới!";
 
     await channel.send(`${mention} 📰 **Fanpage vừa đăng bài mới!**\n> ${message}\n🔗 ${link}`);
-
     console.log("✅ Đã gửi thông báo bài viết mới tới kênh release-feed");
   } catch (err) {
     console.error("❌ Lỗi khi gửi thông báo bài viết mới:", err);
   }
 }
-
 
 // 🔑 Đăng nhập bot
 client.login(process.env.TOKEN);

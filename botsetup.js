@@ -1,12 +1,13 @@
-import { Client, GatewayIntentBits } from "discord.js";
+// bot.js
 import dotenv from "dotenv";
+import { Client, GatewayIntentBits } from "discord.js"; // 👈 thêm dòng này
 
 dotenv.config();
 
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers, // cần để bot thấy member mới
+    GatewayIntentBits.GuildMembers, // để bot thấy member mới
   ],
 });
 
@@ -14,7 +15,6 @@ client.once("ready", () => {
   console.log(`✅ Bot đăng nhập: ${client.user.tag}`);
 });
 
-// Khi có thành viên mới
 client.on("guildMemberAdd", async (member) => {
   console.log(`👤 Thành viên mới: ${member.user.tag}`);
 
@@ -23,7 +23,6 @@ client.on("guildMemberAdd", async (member) => {
     ch.name.toLowerCase().includes("welcome")
   );
 
-  // Gửi lời chào
   if (welcomeChannel) {
     await welcomeChannel.send(
       `🎉 Chào mừng **${member.user.username}** đã đến với **${member.guild.name}**!`

@@ -1,7 +1,6 @@
-// bot.js
 import dotenv from "dotenv";
 import express from "express";
-import { Client, GatewayIntentBits, TextChannel } from "discord.js";
+import { Client, GatewayIntentBits, TextChannel, EmbedBuilder } from "discord.js";
 
 dotenv.config();
 
@@ -11,41 +10,36 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-// ✅ Kiểm tra root (để Render/Replit biết server sống)
-app.get("/", (req, res) => res.send("✅ Bot is running!"));
-
-// ✅ Xác minh Webhook của Facebook
 const VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN;
 
+// ✅ Route test server
+app.get("/", (req, res) => res.send("✅ Bot is running!"));
+
+// ✅ Facebook Webhook verification
 app.get("/webhook", (req, res) => {
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
 
-  console.log("📩 Webhook verification request:", { mode, token, challenge });
-
-  // Phải có mode=subscribe và verify_token trùng thì mới xác nhận được
   if (mode === "subscribe" && token === VERIFY_TOKEN) {
     console.log("✅ Facebook Webhook verified successfully!");
-    res.status(200).type("text/plain").send(challenge); // Facebook yêu cầu text/plain
+    res.status(200).type("text/plain").send(challenge);
   } else {
     console.log("❌ Webhook verification failed!");
     res.sendStatus(403);
   }
 });
 
-// 📬 Khi Facebook gửi thông báo bài viết mới
+// 📬 Khi Facebook gửi bài mới
 app.post("/webhook", (req, res) => {
   console.log("📨 Webhook POST received:", JSON.stringify(req.body, null, 2));
 
   const body = req.body;
   if (body.object === "page") {
     body.entry?.forEach((entry) => {
-      const changes = entry.changes || [];
-      changes.forEach((change) => {
+      entry.changes?.forEach((change) => {
         if (change.field === "feed") {
           const value = change.value;
-		   // ✅ Chỉ xử lý khi là bài đăng mới (status hoặc photo)
           if (
             value.verb === "add" &&
             (value.item === "status" || value.item === "photo" || value.item === "share")
@@ -116,7 +110,7 @@ client.on("guildMemberAdd", async (member) => {
 });
 
 /* =========================
-   📰 KHI FANPAGE ĐĂNG BÀI MỚI
+   📰 GỬI THÔNG BÁO BÀI VIẾT MỚI
 ========================= */
 async function handleNewPost(value) {
   try {
@@ -124,20 +118,40 @@ async function handleNewPost(value) {
     if (!guild) return console.warn("⚠️ Không tìm thấy guild");
 
     const channel = guild.channels.cache.get(process.env.RELEASE_FEED_CHANNEL_ID);
-    if (!(channel instanceof TextChannel)) {
+    if (!(channel instanceof TextChannel))
       return console.warn("⚠️ Channel không phải TextChannel hoặc không tìm thấy");
-    }
 
     const role = guild.roles.cache.find((r) => r.name.includes("Reader / Fan"));
     const mention = role ? `<@&${role.id}>` : "";
 
     const postId = value.post_id || value.id;
-    const link = `https://www.facebook.com/${postId}`;
-    const message = value.message || "Fanpage vừa đăng một bài viết mới!";
+    const postLink = `https://www.facebook.com/${postId.replace("_", "/posts/")}`;
+    const postMessage = value.message || "Fanpage vừa đăng một bài viết mới!";
+    const pageName = value.from?.name || "Trang Facebook";
+    const pageIcon = "https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg";
+    const postTime = new Date((value.created_time || Date.now()) * 1000);
 
-    await channel.send(
-      `${mention} 📰 **Fanpage vừa đăng bài mới!**\n> ${message}\n🔗 ${link}`
-    );
+    // Tạo embed giống Pingcord
+    const embed = new EmbedBuilder()
+      .setAuthor({ name: pageName, iconURL: pageIcon, url: postLink })
+      .setTitle("📰 Bài viết mới trên fanpage!")
+      .setDescription(postMessage)
+      .setColor(0x1877f2)
+      .setURL(postLink)
+      .setFooter({ text: "Facebook", iconURL: pageIcon })
+      .setTimestamp(postTime);
+
+    // Nếu có ảnh đính kèm
+    const attachments = value.attachments?.data;
+    if (attachments && attachments[0]?.media?.image?.src) {
+      embed.setImage(attachments[0].media.image.src);
+    }
+
+    await channel.send({
+      content: `${mention} **Fanpage vừa đăng bài mới!**`,
+      embeds: [embed],
+    });
+
     console.log("✅ Đã gửi thông báo bài viết mới tới kênh release-feed");
   } catch (err) {
     console.error("❌ Lỗi khi gửi thông báo bài viết mới:", err);

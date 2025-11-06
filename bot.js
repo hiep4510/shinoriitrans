@@ -13,7 +13,7 @@ app.use(express.json());
 
 // ✅ Kiểm tra root (để Render/Replit biết server sống)
 app.get("/", (req, res) => res.send("✅ Bot is running!"));
-app.listen(process.env.PORT || 10000, () => console.log("Server ready"));
+app.listen(process.env.PORT, () => console.log("Server ready"));
 // ✅ Xác minh Webhook của Facebook
 const VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN;
 

@@ -43,7 +43,7 @@ app.post("/webhook", (req, res) => {
     body.entry?.forEach((entry) => {
       const changes = entry.changes || [];
       changes.forEach((change) => {
-        if (change.field === "feed" && change.value?.item === "post") {
+        if (change.field === "feed") {
           handleNewPost(change.value);
         }
       });

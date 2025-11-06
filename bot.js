@@ -44,7 +44,14 @@ app.post("/webhook", (req, res) => {
       const changes = entry.changes || [];
       changes.forEach((change) => {
         if (change.field === "feed") {
-          handleNewPost(change.value);
+          const value = change.value;
+		   // ✅ Chỉ xử lý khi là bài đăng mới (status hoặc photo)
+          if (
+            value.verb === "add" &&
+            (value.item === "status" || value.item === "photo" || value.item === "share")
+          ) {
+            handleNewPost(value);
+          }
         }
       });
     });

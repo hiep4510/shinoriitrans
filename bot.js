@@ -136,7 +136,10 @@ async function setupMangaChannels(guild) {
   const readerFanRole = guild.roles.cache.get("1435243510474211429");
 
   for (const manga of mangaList) {
-    const channelName = manga.toLowerCase().replace(/[^a-z0-9]/gi, "-").slice(0, 90);
+	const channelName = manga
+	.toLowerCase()
+	.replace(/[^a-z0-9]+/gi, "-") // tất cả ký tự không phải a-z0-9 → -
+	.replace(/^-+|-+$/g, "");     // bỏ - đầu cuối
     let channel = guild.channels.cache.find(
       (c) => c.name === channelName && c.parentId === category.id
     );

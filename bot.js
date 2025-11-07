@@ -429,6 +429,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 /* =========================
    FACEBOOK POST HANDLER
 ========================= */
+import { EmbedBuilder, TextChannel } from "discord.js";
+import { client } from "./bot.js";
+
 async function handleNewPost(value) {
   try {
     const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID);
@@ -436,38 +439,52 @@ async function handleNewPost(value) {
 
     const channel = guild.channels.cache.get(process.env.RELEASE_FEED_CHANNEL_ID);
     if (!(channel instanceof TextChannel))
-      return console.warn("⚠️ Channel không phải TextChannel hoặc không tìm thấy");
+      return console.warn("⚠️ Không tìm thấy kênh feed hợp lệ");
 
+    // Lấy role mention
     const role = guild.roles.cache.find((r) => r.name.includes("Reader / Fan"));
     const mention = role ? `<@&${role.id}>` : "";
 
+    // Lấy dữ liệu post
+    const pageName = value.from?.name || "Fanpage";
+    const pageIcon = value.from?.picture?.data?.url || null;
+    const postMessage = value.message?.trim() || "(Không có nội dung)";
+    const attachments = value.attachments?.data || [];
+    const imageUrl = attachments[0]?.media?.image?.src || null;
     const postId = value.post_id || value.id;
     const postLink = `https://www.facebook.com/${postId.replace("_", "/posts/")}`;
-    const postMessage = value.message?.trim() || "Fanpage vừa đăng một bài viết mới!";
-    const pageName = value.from?.name || "Trang Facebook";
-    const attachments = value.attachments?.data || [];
+    const createdTime = new Date(value.created_time || Date.now());
 
-    // Gửi nội dung bài viết (văn bản + link)
-    let content = `${mention} **${pageName} vừa đăng bài mới!**\n\n${postMessage}\n\n🔗 ${postLink}`;
-    if (content.length > 2000) content = content.slice(0, 1990) + "..."; // tránh vượt giới hạn Discord
+    // Tạo embed giống bài Facebook
+    const embed = new EmbedBuilder()
+      .setColor("#0866FF")
+      .setAuthor({
+        name: pageName,
+        iconURL: pageIcon,
+        url: postLink,
+      })
+      .setDescription(postMessage)
+      .setFooter({
+        text: "Facebook",
+        iconURL: "https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg",
+      })
+      .setTimestamp(createdTime);
 
-    await channel.send(content);
+    if (imageUrl) embed.setImage(imageUrl);
 
-    // Nếu có ảnh, gửi tối đa 5 ảnh trong các message riêng
-    const imageUrls = attachments
-      .map((a) => a.media?.image?.src)
-      .filter((u) => !!u)
-      .slice(0, 5);
+    // Gửi ra Discord
+    await channel.send({
+      content: `${mention} **${pageName} vừa đăng bài mới!**`,
+      embeds: [embed],
+    });
 
-    for (const url of imageUrls) {
-      await channel.send({ files: [url] });
-    }
-
-    console.log(`✅ Đã gửi post mới có ${imageUrls.length} ảnh.`);
+    console.log(`✅ Đã gửi bài post mới từ ${pageName}`);
   } catch (err) {
-    console.error("❌ Lỗi khi gửi bài viết mới:", err);
+    console.error("❌ Lỗi khi gửi post mới:", err);
   }
 }
+export { handleNewPost };
+
 
 /* =========================
    WELCOME MEMBER

@@ -108,9 +108,11 @@ const memberMap = {
 const currentChapterMap = {};
 const roleDataMap = new Map();
 
-const ADMIN_ROLE_ID = "1435243498482700390";
-const MOD_ROLE_ID = "1435243499829198952";
-const READONLY_ROLE_ID = "1435243510474211429";
+// Authorized identities
+const ADMIN_ROLE_ID = "1435243498482700390"; // admin (requested)
+const MOD_ROLE_ID = "1435243499829198952"; // mod (requested)
+const AUTH_USER_ID = "1385427304921960478"; // single user allowed
+const READONLY_ROLE_ID = "1435243510474211429"; // keep as before (if needed)
 
 /* =========================
    READY
@@ -208,12 +210,16 @@ async function setupMangaChannels(guild) {
 ========================= */
 client.on(Events.InteractionCreate, async (interaction) => {
   try {
+    // Some interactions (like webhooks) may not have member — guard
     const member = interaction.member;
+    const userId = interaction.user?.id;
 
-    // Chặn người không có quyền dùng 2 nút gốc
+    // Determine authorization: admin role OR mod role OR specific user id
     const isAuthorized =
-      member.roles.cache.has(ADMIN_ROLE_ID) || member.roles.cache.has(MOD_ROLE_ID);
+      (member && (member.roles.cache.has(ADMIN_ROLE_ID) || member.roles.cache.has(MOD_ROLE_ID))) ||
+      userId === AUTH_USER_ID;
 
+    // If user is not authorized, block the two main buttons on the embed gốc
     if (
       !isAuthorized &&
       interaction.isButton() &&
@@ -284,6 +290,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       const mangaName = interaction.customId.replace("create-chapter-", "");
       const channel = interaction.channel;
 
+      // fetch recent messages in channel to find existing chapter embeds and the setup embed
       const fetched = await channel.messages.fetch({ limit: 100 });
       const chapterEmbeds = fetched.filter(
         (m) => m.embeds.length > 0 && m.embeds[0].title?.startsWith("📖 Chương")
@@ -296,7 +303,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       currentChapterMap[mangaName] = nextChap;
 
-      // 🔹 Cập nhật embed gốc hiển thị chương hiện tại
+      // 🔹 Cập nhật embed gốc hiển thị chương hiện tại (nếu tìm thấy)
       const setupMsg = fetched.find(
         (m) => m.embeds.length && m.embeds[0].title?.includes(mangaName)
       );
@@ -305,10 +312,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
           name: "📖 Chương hiện tại",
           value: `Chương ${nextChap}`,
         });
-        await setupMsg.edit({ embeds: [updated] });
+        try {
+          await setupMsg.edit({ embeds: [updated] });
+        } catch (err) {
+          console.warn("Không thể cập nhật embed gốc:", err.message);
+        }
       }
 
-      // Embed chương
+      // Embed chương mới
       const mainEmbed = new EmbedBuilder()
         .setTitle(`📖 Chương ${nextChap}`)
         .setDescription("Chọn thành viên cho từng mục từ dropdown bên dưới")
@@ -327,6 +338,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         content: `✅ Đã tạo **Chương ${nextChap}** cho **${mangaName}**.`,
       });
 
+      // Dropdown theo thứ tự Translator → Editor → PR + QC
       const dropdownRoles = ["Translator", "Editor", "PR + QC"];
       for (const roleName of dropdownRoles) {
         const options = Object.values(memberMap).map(
@@ -345,8 +357,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
         });
       }
 
-      // 🔹 Gửi lại embed gốc
-      if (setupMsg) await channel.send({ embeds: setupMsg.embeds, components: setupMsg.components });
+      // 🔹 Gửi lại embed gốc (nút + nội dung) để hiển thị lại giao diện
+      if (setupMsg) {
+        try {
+          await channel.send({ embeds: setupMsg.embeds, components: setupMsg.components });
+        } catch (err) {
+          console.warn("Không thể gửi lại embed gốc:", err.message);
+        }
+      }
     }
 
     // ===== Dropdown chọn người =====
@@ -354,11 +372,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
       const [_, roleName, mainMsgId] = interaction.customId.split("-");
       if (!roleDataMap.has(mainMsgId)) return;
 
-      const member = interaction.member;
-      if (
-        !member.roles.cache.has(ADMIN_ROLE_ID) &&
-        !member.roles.cache.has(MOD_ROLE_ID)
-      ) {
+      // Dropdown chỉ thao tác bởi admin/mod or specific user
+      const dropdownUserId = interaction.user?.id;
+      const dropdownMember = interaction.member;
+      const dropdownAuthorized =
+        (dropdownMember &&
+          (dropdownMember.roles.cache.has(ADMIN_ROLE_ID) ||
+            dropdownMember.roles.cache.has(MOD_ROLE_ID))) ||
+        dropdownUserId === AUTH_USER_ID;
+
+      if (!dropdownAuthorized) {
         return await interaction.reply({
           content: "🚫 Bạn không có quyền thao tác dropdown này.",
           ephemeral: true,

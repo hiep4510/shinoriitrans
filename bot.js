@@ -427,11 +427,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 /* =========================
-   FACEBOOK POST HANDLER
+   FACEBOOK POST HANDLER 
 ========================= */
-import { EmbedBuilder, TextChannel } from "discord.js";
-import { client } from "./bot.js";
-
 async function handleNewPost(value) {
   try {
     const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID);
@@ -441,11 +438,9 @@ async function handleNewPost(value) {
     if (!(channel instanceof TextChannel))
       return console.warn("⚠️ Không tìm thấy kênh feed hợp lệ");
 
-    // Lấy role mention
     const role = guild.roles.cache.find((r) => r.name.includes("Reader / Fan"));
     const mention = role ? `<@&${role.id}>` : "";
 
-    // Lấy dữ liệu post
     const pageName = value.from?.name || "Fanpage";
     const pageIcon = value.from?.picture?.data?.url || null;
     const postMessage = value.message?.trim() || "(Không có nội dung)";
@@ -455,7 +450,6 @@ async function handleNewPost(value) {
     const postLink = `https://www.facebook.com/${postId.replace("_", "/posts/")}`;
     const createdTime = new Date(value.created_time || Date.now());
 
-    // Tạo embed giống bài Facebook
     const embed = new EmbedBuilder()
       .setColor("#0866FF")
       .setAuthor({
@@ -466,13 +460,13 @@ async function handleNewPost(value) {
       .setDescription(postMessage)
       .setFooter({
         text: "Facebook",
-        iconURL: "https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg",
+        iconURL:
+          "https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg",
       })
       .setTimestamp(createdTime);
 
     if (imageUrl) embed.setImage(imageUrl);
 
-    // Gửi ra Discord
     await channel.send({
       content: `${mention} **${pageName} vừa đăng bài mới!**`,
       embeds: [embed],
@@ -483,22 +477,22 @@ async function handleNewPost(value) {
     console.error("❌ Lỗi khi gửi post mới:", err);
   }
 }
-export { handleNewPost };
-
 
 /* =========================
    WELCOME MEMBER
 ========================= */
 client.on("guildMemberAdd", async (member) => {
-  const welcomeChannel = member.guild.channels.cache.find(ch =>
+  const welcomeChannel = member.guild.channels.cache.find((ch) =>
     ch.name.toLowerCase().includes("welcome")
   );
 
   if (welcomeChannel) {
-    await welcomeChannel.send(`🎉 Chào mừng **${member.user.username}** đã đến với **${member.guild.name}**!`);
+    await welcomeChannel.send(
+      `🎉 Chào mừng **${member.user.username}** đã đến với **${member.guild.name}**!`
+    );
   }
 
-  const role = member.guild.roles.cache.find(r => r.name.includes("Reader / Fan"));
+  const role = member.guild.roles.cache.find((r) => r.name.includes("Reader / Fan"));
   if (role) {
     try {
       await member.roles.add(role);
@@ -508,6 +502,7 @@ client.on("guildMemberAdd", async (member) => {
     }
   }
 });
+
 /* =========================
    LOGIN
 ========================= */

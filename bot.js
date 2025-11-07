@@ -443,36 +443,32 @@ async function handleNewPost(value) {
 
     const postId = value.post_id || value.id;
     const postLink = `https://www.facebook.com/${postId.replace("_", "/posts/")}`;
-    const postMessage = value.message || "Fanpage vừa đăng một bài viết mới!";
+    const postMessage = value.message?.trim() || "Fanpage vừa đăng một bài viết mới!";
     const pageName = value.from?.name || "Trang Facebook";
-    const pageIcon =
-      "https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg";
-    const postTime = new Date((value.created_time || Date.now()) * 1000);
+    const attachments = value.attachments?.data || [];
 
-    const embed = new EmbedBuilder()
-      .setAuthor({ name: pageName, iconURL: pageIcon, url: postLink })
-      .setTitle("📰 Bài viết mới trên fanpage!")
-      .setDescription(postMessage)
-      .setColor(0x1877f2)
-      .setURL(postLink)
-      .setFooter({ text: "Facebook", iconURL: pageIcon })
-      .setTimestamp(postTime);
+    // Gửi nội dung bài viết (văn bản + link)
+    let content = `${mention} **${pageName} vừa đăng bài mới!**\n\n${postMessage}\n\n🔗 ${postLink}`;
+    if (content.length > 2000) content = content.slice(0, 1990) + "..."; // tránh vượt giới hạn Discord
 
-    const attachments = value.attachments?.data;
-    if (attachments && attachments[0]?.media?.image?.src) {
-      embed.setImage(attachments[0].media.image.src);
+    await channel.send(content);
+
+    // Nếu có ảnh, gửi tối đa 5 ảnh trong các message riêng
+    const imageUrls = attachments
+      .map((a) => a.media?.image?.src)
+      .filter((u) => !!u)
+      .slice(0, 5);
+
+    for (const url of imageUrls) {
+      await channel.send({ files: [url] });
     }
 
-    await channel.send({
-      content: `${mention} **Fanpage vừa đăng bài mới!**`,
-      embeds: [embed],
-    });
-
-    console.log("✅ Đã gửi thông báo bài viết mới tới kênh release-feed");
+    console.log(`✅ Đã gửi post mới có ${imageUrls.length} ảnh.`);
   } catch (err) {
-    console.error("❌ Lỗi khi gửi thông báo bài viết mới:", err);
+    console.error("❌ Lỗi khi gửi bài viết mới:", err);
   }
 }
+
 /* =========================
    WELCOME MEMBER
 ========================= */

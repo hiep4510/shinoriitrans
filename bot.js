@@ -310,7 +310,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       const roles = { "🖋": "Editor", "💬": "Translator", "🔍": "PR + QC" };
       for (const [icon, roleName] of Object.entries(roles)) {
-        const text = `${icon} **${roleName}** — React để chọn thành viên:\n1️⃣ Nam thần bí ẩn\n2️⃣ Juli\n3️⃣ SnowTy\n4️⃣ Shork\n5️⃣ Bean\n6️⃣ Golk`;
+        const text = `${icon} **${roleName}** — React để chọn thành viên:\n🧠Nam thần bí ẩn\n⚡Juli\n❄️SnowTy\n🦈Shork\n🫘Bean\n🧱 Golk`;
         const roleMsg = await channel.send({ content: text });
         for (const emoji of Object.keys(memberMap)) await roleMsg.react(emoji);
       }

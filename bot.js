@@ -98,14 +98,13 @@ const mangaList = [
 ];
 
 const memberMap = {
-  "🧠": "Nam thần bí ẩn",
-  "⚡": "Juli",
-  "❄️": "SnowTy",
-  "🦈": "Shork",
-  "🫘": "Bean",
-  "🧱": "Golk",
+  "1️⃣": "Nam thần bí ẩn",
+  "2️⃣": "Juli",
+  "3️⃣": "SnowTy",
+  "4️⃣": "Shork",
+  "5️⃣": "Bean",
+  "6️⃣": "Golk",
 };
-
 
 const currentChapterMap = {}; // RAM cache
 const roleDataMap = new Map(); // key = mainMsg.id, value = {Editor:[], Translator:[], "PR + QC":[]}
@@ -310,7 +309,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       const roles = { "🖋": "Editor", "💬": "Translator", "🔍": "PR + QC" };
       for (const [icon, roleName] of Object.entries(roles)) {
-        const text = `${icon} **${roleName}** — React để chọn thành viên:\n🧠Nam thần bí ẩn\n⚡Juli\n❄️SnowTy\n🦈Shork\n🫘Bean\n🧱 Golk`;
+        const text = `${icon} **${roleName}** — React để chọn thành viên:\n1️⃣ Nam thần bí ẩn\n2️⃣ Juli\n3️⃣ SnowTy\n4️⃣ Shork\n5️⃣ Bean\n6️⃣ Golk`;
         const roleMsg = await channel.send({ content: text });
         for (const emoji of Object.keys(memberMap)) await roleMsg.react(emoji);
       }

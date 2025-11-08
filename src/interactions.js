@@ -31,29 +31,6 @@ function isAuthorized(member, userId) {
 }
 
 /* ========= Setup Center UI ========= */
-async function showSetupCenter(interaction) {
-  // kiểm tra channel
-  if (!interaction.channel || interaction.channel.name !== "setup-center") return;
-
-  const embed = new EmbedBuilder()
-    .setTitle("⚙️ Setup Center")
-    .setDescription("Quản lý danh sách manga / thành viên và add channel theo danh sách hiện tại.");
-
-  const mangaRow = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId("update-manga-list").setLabel("📚 Danh sách Manga").setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId("add-channel").setLabel("➕ Tạo Channel").setStyle(ButtonStyle.Success)
-  );
-
-  const memberRow = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId("update-member-list").setLabel("👥 Danh sách Thành viên").setStyle(ButtonStyle.Primary)
-  );
-
-  if (interaction.replied || interaction.deferred) {
-    await interaction.followUp({ embeds: [embed], components: [mangaRow, memberRow], ephemeral: true });
-  } else {
-    await interaction.reply({ embeds: [embed], components: [mangaRow, memberRow], ephemeral: true });
-  }
-}
 
 export function registerInteractionHandlers(client) {
   client.on(Events.InteractionCreate, async (interaction) => {
@@ -210,7 +187,6 @@ export function registerInteractionHandlers(client) {
           cfg.setMangaList(arr);
           await interaction.reply({ content: `✅ Đã thêm manga **${name}**.`, ephemeral: true });
 
-          await showSetupCenter(interaction);
           return;
         }
 
@@ -225,7 +201,6 @@ export function registerInteractionHandlers(client) {
           cfg.setMangaList(arr);
           await interaction.reply({ content: `✅ Đã đổi **${oldName}** → **${newName}**`, ephemeral: true });
 
-          await showSetupCenter(interaction);
           return;
         }
 
@@ -239,7 +214,6 @@ export function registerInteractionHandlers(client) {
           cfg.setMangaList(arr);
           await interaction.reply({ content: `✅ Đã xóa **${name}** khỏi danh sách.`, ephemeral: true });
 
-          await showSetupCenter(interaction);
           return;
         }
 
@@ -253,7 +227,6 @@ export function registerInteractionHandlers(client) {
           cfg.setMemberMap(map);
           await interaction.reply({ content: `✅ Đã thêm thành viên **${name}**.`, ephemeral: true });
 
-          await showSetupCenter(interaction);
           return;
         }
 
@@ -268,7 +241,6 @@ export function registerInteractionHandlers(client) {
           cfg.setMemberMap(map);
           await interaction.reply({ content: `✅ Đã đổi tên **${oldName}** → **${newName}**`, ephemeral: true });
 
-          await showSetupCenter(interaction);
           return;
         }
 
@@ -281,7 +253,6 @@ export function registerInteractionHandlers(client) {
           cfg.setMemberMap(map);
           await interaction.reply({ content: `✅ Đã xóa thành viên **${name}**.`, ephemeral: true });
 
-          await showSetupCenter(interaction);
           return;
         }
 	  }

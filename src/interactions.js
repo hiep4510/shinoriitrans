@@ -351,12 +351,21 @@ export function registerInteractionHandlers(client) {
           .addFields(
             { name: "💬 Translator", value: "Chưa chọn", inline: false },
             { name: "🖋 Editor", value: "Chưa chọn", inline: false },
-            { name: "🔍 PR + QC", value: "Chưa chọn", inline: false }
+            { name: "🔍 PR + QC", value: "Chưa chọn", inline: false },
+			{ name: "📊 Trạng thái", value: "Đang tiến hành", inline: false } // Thêm trạng thái
           )
           .setColor("#FFD700")
           .setFooter({ text: `Manga: ${mangaName}` });
-
-        const mainMsg = await channel.send({ embeds: [mainEmbed] });
+		// Nút Done! sẽ được thêm vào dưới embed
+		const doneButton = new ButtonBuilder()
+		.setCustomId(`done-chapter-${mangaName}-${nextChap}`) // Đặt customId cho nút Done!
+		.setLabel("Done!")
+		.setStyle(ButtonStyle.Success);
+		
+		// Tạo ActionRow chứa button và gửi thông báo với cả embed và row
+		const row = new ActionRowBuilder().addComponents(doneButton);
+		
+        const mainMsg = await channel.send({ embeds: [mainEmbed], components: [row],});
         roleDataMap.set(mainMsg.id, { Editor: [], Translator: [], "PR + QC": [] });
 
         await interaction.editReply({
@@ -450,6 +459,53 @@ if (
     content: `✅ Đã cập nhật ${roleName}.`,
     flags: MessageFlags.Ephemeral,
   });
+  return;
+}
+// ===== Handle Done! button click =====
+if (interaction.isButton() && interaction.customId.startsWith("done-chapter-")) {
+  const [_, mangaName, chapter] = interaction.customId.split("-");
+
+  // Lấy messageId để chỉnh sửa
+  const messageId = interaction.message.id;
+  const mainMsg = await interaction.channel.messages.fetch(messageId);
+
+  if (mainMsg) {
+    const oldEmbed = EmbedBuilder.from(mainMsg.embeds[0]);
+
+    // Kiểm tra trạng thái hiện tại
+    const statusField = oldEmbed.data.fields.find(f => f.name === "📊 Trạng thái");
+
+    // Nếu không tìm thấy trường trạng thái, bỏ qua
+    if (!statusField) {
+      await interaction.reply({
+        content: "❌ Không thể tìm thấy trường trạng thái trong tin nhắn này.",
+        ephemeral: true,
+      });
+      return;
+    }
+
+    // Nếu trạng thái là "Đang tiến hành", đổi thành "Đã hoàn thành!"
+    // Nếu trạng thái là "Đã hoàn thành!", đổi lại thành "Đang tiến hành"
+    const newStatus = statusField.value === "Đang tiến hành" ? "Đã hoàn thành!" : "Đang tiến hành";
+
+    // Cập nhật trạng thái trong embed
+    const updatedEmbed = EmbedBuilder.from(oldEmbed)
+      .setFields(
+        oldEmbed.data.fields.map(f =>
+          f.name === "📊 Trạng thái" ? { ...f, value: newStatus } : f
+        )
+      );
+
+    // Cập nhật tin nhắn với trạng thái mới
+    await mainMsg.edit({ embeds: [updatedEmbed] });
+
+    // Trả lời người dùng rằng trạng thái đã được cập nhật
+    await interaction.reply({
+      content: `✅ Trạng thái chương **${mangaName} - ${chapter}** đã được cập nhật thành **${newStatus}**.`,
+      ephemeral: true,
+    });
+  }
+
   return;
 }
 

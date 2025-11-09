@@ -14,36 +14,32 @@ export const DEFAULT_CATEGORY_NAME = "Manga Projects";
 export const SETUP_CENTER_NAME = "Setup Center";
 
 /* ========== File lưu dữ liệu ========== */
-const DATA_DIR = path.resolve("./data");
+// Dùng path relative với file này
+const DATA_DIR = path.join(path.resolve(), "src", "data");
+
 // tạo thư mục nếu chưa có
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const MANGA_FILE = path.join(DATA_DIR, "mangaList.json");
 const MEMBER_FILE = path.join(DATA_DIR, "memberMap.json");
 
-/* ========== load dữ liệu từ file hoặc dùng mặc định ========== */
-export let mangaList = fs.existsSync(MANGA_FILE)
-  ? JSON.parse(fs.readFileSync(MANGA_FILE, "utf-8"))
-  : [
-      "Make Heroine wo Katasetai!!",
-      "Chanto Suki tte Ieru Ko Musou",
-      "Someone Hertz",
-      "Oshite Dame nara Oshite miro!",
-      "Saigo no Negai ni Tsuki ga Naku",
-      "Idol Chuunibyou",
-      "Toaru Kagaku no Mental Out",
-    ];
+/* ========== load dữ liệu từ file ========== */
+export let mangaList = [];
+export let memberMap = {};
 
-export let memberMap = fs.existsSync(MEMBER_FILE)
-  ? JSON.parse(fs.readFileSync(MEMBER_FILE, "utf-8"))
-  : {
-      "Nam thần bí ẩn": "Nam thần bí ẩn",
-      Juli: "Juli",
-      SnowTy: "SnowTy",
-      Shork: "Shork",
-      Bean: "Bean",
-      Golk: "Golk",
-    };
+// Load mangaList
+if (fs.existsSync(MANGA_FILE)) {
+  mangaList = JSON.parse(fs.readFileSync(MANGA_FILE, "utf-8"));
+} else {
+  console.warn(`[Warning] File mangaList.json không tồn tại ở ${MANGA_FILE}`);
+}
+
+// Load memberMap
+if (fs.existsSync(MEMBER_FILE)) {
+  memberMap = JSON.parse(fs.readFileSync(MEMBER_FILE, "utf-8"));
+} else {
+  console.warn(`[Warning] File memberMap.json không tồn tại ở ${MEMBER_FILE}`);
+}
 
 /* ========== helper để update runtime + ghi vào file ========== */
 export function setMangaList(newList) {

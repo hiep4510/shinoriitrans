@@ -15,7 +15,8 @@ export const SETUP_CENTER_NAME = "Setup Center";
 
 /* ========== File lưu dữ liệu ========== */
 const DATA_DIR = path.resolve("./data");
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
+// tạo thư mục nếu chưa có
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const MANGA_FILE = path.join(DATA_DIR, "mangaList.json");
 const MEMBER_FILE = path.join(DATA_DIR, "memberMap.json");

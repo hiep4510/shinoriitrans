@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -14,11 +15,14 @@ export const DEFAULT_CATEGORY_NAME = "Manga Projects";
 export const SETUP_CENTER_NAME = "Setup Center";
 
 /* ========== File lưu dữ liệu ========== */
-// Dùng đường dẫn tuyệt đối dựa vào file này
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+// Lấy đường dẫn tuyệt đối tới thư mục chứa file này
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Thư mục data nằm trong src/data
 const DATA_DIR = path.join(__dirname, "data");
 
-// tạo thư mục nếu chưa có
+// Tạo thư mục nếu chưa có
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const MANGA_FILE = path.join(DATA_DIR, "mangaList.json");
@@ -57,6 +61,7 @@ export function setMangaList(newList) {
   mangaList = newList;
   try {
     fs.writeFileSync(MANGA_FILE, JSON.stringify(newList, null, 2), "utf-8");
+    console.log(`[Info] Đã ghi mangaList.json với ${newList.length} manga`);
   } catch (err) {
     console.error("[Error] Không thể ghi mangaList.json:", err);
   }
@@ -66,6 +71,7 @@ export function setMemberMap(newMap) {
   memberMap = newMap;
   try {
     fs.writeFileSync(MEMBER_FILE, JSON.stringify(newMap, null, 2), "utf-8");
+    console.log(`[Info] Đã ghi memberMap.json với ${Object.keys(newMap).length} member`);
   } catch (err) {
     console.error("[Error] Không thể ghi memberMap.json:", err);
   }

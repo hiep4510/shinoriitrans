@@ -35,7 +35,7 @@ export function startBot() {
     const guild = client.guilds.cache.get(ENV.DISCORD_GUILD_ID);
 	if (guild) {
 	// chỉ tạo setup center thôi, không tạo manga channel
-	await ensureSetupCenter(guild, mangaList);
+	//await ensureSetupCenter(guild, mangaList);
 	}
 
     // start express server

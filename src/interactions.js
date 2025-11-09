@@ -70,7 +70,12 @@ export function registerInteractionHandlers(client) {
         const embed = new EmbedBuilder()
           .setTitle("👥 Danh sách Thành viên")
           .setDescription("Danh sách hiện tại:")
-          .addFields({ name: "Members", value: Object.values(importedMemberMap).join("\n") || "(Trống)" });
+		  .addFields({
+		  name: "Members",
+		  value: Object.values(importedMemberMap)
+		  	.map((m, i) => `${i + 1}. ${m}`)
+		  	.join("\n") || "(Trống)",
+		  });
 
         const row = new ActionRowBuilder().addComponents(
           new ButtonBuilder().setCustomId("add-member").setLabel("Thêm thành viên").setStyle(ButtonStyle.Success),

@@ -36,6 +36,7 @@ export function startBot() {
 	if (guild) {
 	// chỉ tạo setup center thôi, không tạo manga channel
 	//await ensureSetupCenter(guild, mangaList);
+	await refreshMangaEmbeds(guild, mangaList);
 	}
 
     // start express server

@@ -388,7 +388,9 @@ export function registerInteractionHandlers(client) {
           const selectMenu = new StringSelectMenuBuilder()
             .setCustomId(`select-${roleName}-${mainMsg.id}`)
             .setPlaceholder(`Chọn ${roleName}`)
-            .addOptions(options);
+            .addOptions(options)
+			.setMinValues(0)
+			.setMaxValues(options.length);
 
           const row = new ActionRowBuilder().addComponents(selectMenu);
           await channel.send({

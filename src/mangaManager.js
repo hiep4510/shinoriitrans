@@ -5,14 +5,53 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
 } from "discord.js";
-import { DEFAULT_CATEGORY_NAME, SETUP_CENTER_NAME, READONLY_ROLE_ID, mangaList as initialMangaList, setMangaList } from "./config.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import {
+  DEFAULT_CATEGORY_NAME,
+  SETUP_CENTER_NAME,
+  READONLY_ROLE_ID,
+} from "./config.js";
 import { currentChapterMap } from "./state.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// 🧩 Helper: lấy đường dẫn cover nếu có
+function getCoverPath(mangaName) {
+  const sanitized = mangaName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/gi, "-")
+    .replace(/^-+|-+$/g, "");
+  const coverDir = path.join(__dirname, "cover");
+  const possibleExts = [".jpg", ".jpeg", ".png", ".webp"];
+  for (const ext of possibleExts) {
+    const filePath = path.join(coverDir, sanitized + ext);
+    if (fs.existsSync(filePath)) return "attachment://" + sanitized + ext;
+  }
+  return null;
+}
+
+// 🧩 Helper: tạo embed manga
+function createMangaEmbed(manga, currentChapter = "Chưa đặt") {
+  const embed = new EmbedBuilder()
+    .setTitle(`📘 ${manga}`)
+    .setDescription(
+      "Ấn nút bên dưới để tạo chương mới hoặc nhập số chương hiện tại."
+    )
+    .addFields({ name: "📖 Chương hiện tại", value: currentChapter })
+    .setColor("#00BFFF");
+
+  const coverPath = getCoverPath(manga);
+  if (coverPath) embed.setThumbnail(coverPath);
+
+  return { embed, coverPath };
+}
+
 /**
- * create or ensure category + manga channels exist per mangaList
+ * 🏗️ Tạo category và các kênh manga (nếu chưa có)
  */
 export async function setupMangaChannels(guild, mangaList) {
   const categoryName = DEFAULT_CATEGORY_NAME;
@@ -60,14 +99,7 @@ export async function setupMangaChannels(guild, mangaList) {
         permissionOverwrites: overwrites,
       });
 
-      const embed = new EmbedBuilder()
-        .setTitle(`📘 ${manga}`)
-        .setDescription(
-          "Ấn nút bên dưới để tạo chương mới hoặc nhập số chương hiện tại."
-        )
-        .addFields({ name: "📖 Chương hiện tại", value: "Chưa đặt" })
-        .setColor("#00BFFF");
-
+      const { embed, coverPath } = createMangaEmbed(manga);
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId(`set-chapter-${manga}`)
@@ -79,7 +111,22 @@ export async function setupMangaChannels(guild, mangaList) {
           .setStyle(ButtonStyle.Success)
       );
 
-      const setupMessage = await channel.send({ embeds: [embed], components: [row] });
+      const files = coverPath
+        ? [
+            path.join(
+              __dirname,
+              "cover",
+              path.basename(coverPath.replace("attachment://", ""))
+            ),
+          ]
+        : [];
+
+      const setupMessage = await channel.send({
+        embeds: [embed],
+        components: [row],
+        files,
+      });
+
       try {
         await setupMessage.pin();
         console.log(`📌 Đã ghim embed gốc vào #${channel.name}`);
@@ -94,7 +141,7 @@ export async function setupMangaChannels(guild, mangaList) {
 }
 
 /**
- * Create multiple channels for a list of manga names (used by Add Channel flow)
+ * ➕ Tạo nhiều channel từ danh sách manga (Add Channel flow)
  */
 export async function createChannelsFromList(guild, mangaNames) {
   const categoryName = DEFAULT_CATEGORY_NAME;
@@ -126,14 +173,7 @@ export async function createChannelsFromList(guild, mangaNames) {
         parent: category.id,
       });
 
-      const embed = new EmbedBuilder()
-        .setTitle(`📘 ${manga}`)
-        .setDescription(
-          "Ấn nút bên dưới để tạo chương mới hoặc nhập số chương hiện tại."
-        )
-        .addFields({ name: "📖 Chương hiện tại", value: "Chưa đặt" })
-        .setColor("#00BFFF");
-
+      const { embed, coverPath } = createMangaEmbed(manga);
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId(`set-chapter-${manga}`)
@@ -145,7 +185,22 @@ export async function createChannelsFromList(guild, mangaNames) {
           .setStyle(ButtonStyle.Success)
       );
 
-      const setupMessage = await channel.send({ embeds: [embed], components: [row] });
+      const files = coverPath
+        ? [
+            path.join(
+              __dirname,
+              "cover",
+              path.basename(coverPath.replace("attachment://", ""))
+            ),
+          ]
+        : [];
+
+      const setupMessage = await channel.send({
+        embeds: [embed],
+        components: [row],
+        files,
+      });
+
       try {
         await setupMessage.pin();
       } catch (err) {}
@@ -156,10 +211,7 @@ export async function createChannelsFromList(guild, mangaNames) {
 }
 
 /**
- * Create or update the Setup Center channel with buttons:
- * - Update manga list
- * - Update member list
- * - Add Channel
+ * ⚙️ Tạo hoặc cập nhật Setup Center channel
  */
 export async function ensureSetupCenter(guild, mangaList) {
   let setupChannel = guild.channels.cache.find(
@@ -175,10 +227,14 @@ export async function ensureSetupCenter(guild, mangaList) {
 
   const embed = new EmbedBuilder()
     .setTitle("⚙️ Setup Center")
-    .setDescription("Quản lý danh sách manga / thành viên và add channel theo danh sách hiện tại.")
-    .addFields(
-      { name: "Các nút", value: "Cập nhật danh sách Manga, Cập nhật danh sách thành viên, Add Channel" }
-    );
+    .setDescription(
+      "Quản lý danh sách manga / thành viên và add channel theo danh sách hiện tại."
+    )
+    .addFields({
+      name: "Các nút",
+      value:
+        "Cập nhật danh sách Manga, Cập nhật danh sách thành viên, Add Channel",
+    });
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
@@ -195,15 +251,19 @@ export async function ensureSetupCenter(guild, mangaList) {
       .setStyle(ButtonStyle.Success)
   );
 
-  // Send or update a pinned message (try to find existing)
   const messages = await setupChannel.messages.fetch({ limit: 50 });
-  const pinned = messages.find((m) => m.embeds.length && m.embeds[0].title === "⚙️ Setup Center");
+  const pinned = messages.find(
+    (m) => m.embeds.length && m.embeds[0].title === "⚙️ Setup Center"
+  );
+
   if (pinned) {
     try {
       await pinned.edit({ embeds: [embed], components: [row] });
     } catch (err) {}
   } else {
     const msg = await setupChannel.send({ embeds: [embed], components: [row] });
-    try { await msg.pin(); } catch (err) {}
+    try {
+      await msg.pin();
+    } catch (err) {}
   }
 }

@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import { startServer } from "./server.js";
 import { ENV } from "./config.js";
-import { setupMangaChannels, ensureSetupCenter } from "./mangaManager.js";
+import { setupMangaChannels, ensureSetupCenter, refreshMangaEmbeds  } from "./mangaManager.js";
 import { registerInteractionHandlers } from "./interactions.js";
 import { setDiscordClient } from "./fbHandler.js";
 import { onGuildMemberAdd } from "./welcomeHandler.js";

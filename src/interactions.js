@@ -18,6 +18,8 @@ import { ADMIN_ROLE_ID, MOD_ROLE_ID, AUTH_USER_ID, setMangaList, setMemberMap, m
 import { currentChapterMap, roleDataMap } from "./state.js";
 import { createChannelsFromList } from "./mangaManager.js";
 import { setMangaList as setMangaListFn, setMemberMap as setMemberMapFn, mangaList as importedMangaList, memberMap as importedMemberMap } from "./config.js";
+import { refreshMangaEmbeds } from "./mangaManager.js";
+import { mangaList } from "./config.js";
 
 /* ========= Check quyền hợp lệ ========= */
 function isAuthorized(member, userId) {

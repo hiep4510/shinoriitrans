@@ -94,7 +94,16 @@ export async function createChannelsFromList(guild, mangaNames) {
           ],
         });
       }
-
+	  
+	  // 1️⃣ @everyone không được gửi tin nhắn
+	  const everyoneRole = guild.roles.everyone; // hoặc guild.roles.cache.get(guild.id)
+	  if (everyoneRole) {
+	  overwrites.push({
+	  	id: everyoneRole.id,
+	  	deny: ["SendMessages"],
+	  });
+	  }
+	  
       channel = await guild.channels.create({
         name: channelName,
         type: ChannelType.GuildText,
@@ -292,7 +301,14 @@ export async function setupMangaChannels(guild, mangaList) {
             "CreatePrivateThreads",
           ],
         });
-
+	  // 1️⃣ @everyone không được gửi tin nhắn
+	  const everyoneRole = guild.roles.everyone; // hoặc guild.roles.cache.get(guild.id)
+	  if (everyoneRole) {
+	  overwrites.push({
+	  	id: everyoneRole.id,
+	  	deny: ["SendMessages"],
+	  });
+	  }
       channel = await guild.channels.create({
         name: channelName,
         type: ChannelType.GuildText,

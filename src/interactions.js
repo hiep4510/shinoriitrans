@@ -35,6 +35,18 @@ function isAuthorized(member, userId) {
 /* ========= Setup Center UI ========= */
 
 export function registerInteractionHandlers(client) {
+  client.once("ready", async () => {
+  console.log(`✅ Logged in as ${client.user.tag}`);
+  
+  try {
+  	// Refresh tất cả embed manga để cover mới luôn cập nhật
+  	for (const guild of client.guilds.cache.values()) {
+  	await refreshMangaEmbeds(guild, mangaList);
+  	}
+  } catch (err) {
+  	console.error("⚠️ Lỗi khi refresh manga embeds:", err);
+  }
+  });
   client.on(Events.InteractionCreate, async (interaction) => {
     try {
       const member = interaction.member;

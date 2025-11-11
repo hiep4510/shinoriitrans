@@ -13,14 +13,22 @@ export function setDiscordClient(client) {
 
 export async function handleNewPost(value) {
   try {
-    if (!_client) return console.warn("fbHandler: discord client not set yet");
+    if (!_client) {
+      console.warn("fbHandler: discord client not set yet");
+      return;
+    }
 
     const guild = _client.guilds.cache.get(ENV.DISCORD_GUILD_ID);
-    if (!guild) return console.warn("⚠️ Không tìm thấy guild");
+    if (!guild) {
+      console.warn("⚠️ Không tìm thấy guild");
+      return;
+    }
 
     const channel = guild.channels.cache.get(ENV.RELEASE_FEED_CHANNEL_ID);
-    if (!(channel instanceof TextChannel))
-      return console.warn("⚠️ Không tìm thấy kênh feed hợp lệ");
+    if (!(channel instanceof TextChannel)) {
+      console.warn("⚠️ Không tìm thấy kênh feed hợp lệ");
+      return;
+    }
 
     const role = guild.roles.cache.find((r) => r.name.includes("Reader / Fan"));
     const mention = role ? `<@&${role.id}>` : "";
@@ -45,7 +53,7 @@ export async function handleNewPost(value) {
 
     const createdTime = new Date(value.created_time || Date.now());
 
-    // --- Tạo Embed giống Pingcord style ---
+    // --- Tạo Embed ---
     const embed = new EmbedBuilder()
       .setColor("#0866FF")
       .setAuthor({
@@ -53,57 +61,7 @@ export async function handleNewPost(value) {
         iconURL: pageIcon,
         url: postLink || undefined,
       })
-      .setTitle(postMessage.split("\n")[0].slice(0, 256)) // Dòng đầu làm title
-      .setDescription(postMessage) // Giữ nội dung chi tiết ở phần description
-      .setFooter({
-        text: "Facebook",
-        iconURL:
-          "https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg",
-      })
-      .setTimestamp(createdTime);
-
-    if (imageUrl) embed.setImage(imageUrl);
-
-    // --- Gửi message ---
-    await channel.send({
-      content: `${mention} **${pageName} vừa đăng bài mới!**`,
-      embeds: [embed],
-    });
-
-    console.log(`✅ Đã gửi bài post mới từ ${pageName}`);
-  } catch (err) {
-    console.error("❌ Lỗi khi gửi post mới:", err);
-  }
-}
-
-  try {
-    if (!_client) return console.warn("fbHandler: discord client not set yet");
-    const guild = _client.guilds.cache.get(ENV.DISCORD_GUILD_ID);
-    if (!guild) return console.warn("⚠️ Không tìm thấy guild");
-
-    const channel = guild.channels.cache.get(ENV.RELEASE_FEED_CHANNEL_ID);
-    if (!(channel instanceof TextChannel))
-      return console.warn("⚠️ Không tìm thấy kênh feed hợp lệ");
-
-    const role = guild.roles.cache.find((r) => r.name.includes("Reader / Fan"));
-    const mention = role ? `<@&${role.id}>` : "";
-
-    const pageName = value.from?.name || "Fanpage";
-    const pageIcon = value.from?.picture?.data?.url || null;
-    const postMessage = value.message?.trim() || "(Không có nội dung)";
-    const attachments = value.attachments?.data || [];
-    const imageUrl = attachments[0]?.media?.image?.src || null;
-    const postId = value.post_id || value.id || "";
-    const postLink = postId ? `https://www.facebook.com/${postId.replace("_", "/posts/")}` : null;
-    const createdTime = new Date(value.created_time || Date.now());
-
-    const embed = new EmbedBuilder()
-      .setColor("#0866FF")
-      .setAuthor({
-        name: pageName,
-        iconURL: pageIcon,
-        url: postLink || undefined,
-      })
+      .setTitle(postMessage.split("\n")[0].slice(0, 256))
       .setDescription(postMessage)
       .setFooter({
         text: "Facebook",

@@ -12,6 +12,7 @@ import { registerInteractionHandlers } from "./interactions.js";
 import { setDiscordClient } from "./fbHandler.js";
 import { onGuildMemberAdd } from "./welcomeHandler.js";
 import { mangaList } from "./config.js";
+import fetch from "node-fetch";
 
 export const client = new Client({
   intents: [

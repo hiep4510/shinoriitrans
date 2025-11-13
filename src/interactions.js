@@ -492,11 +492,8 @@ if (interaction.isButton() && interaction.customId.startsWith("done-chapter-")) 
 
   if (mainMsg) {
     const oldEmbed = EmbedBuilder.from(mainMsg.embeds[0]);
-
-    // Kiểm tra trạng thái hiện tại
     const statusField = oldEmbed.data.fields.find(f => f.name === "📊 Trạng thái");
 
-    // Nếu không tìm thấy trường trạng thái, bỏ qua
     if (!statusField) {
       await interaction.reply({
         content: "❌ Không thể tìm thấy trường trạng thái trong tin nhắn này.",
@@ -505,9 +502,9 @@ if (interaction.isButton() && interaction.customId.startsWith("done-chapter-")) 
       return;
     }
 
-    // Nếu trạng thái là "Đang tiến hành", đổi thành "Đã hoàn thành!"
-    // Nếu trạng thái là "Đã hoàn thành!", đổi lại thành "Đang tiến hành"
-    const newStatus = statusField.value === "Đang tiến hành" ? "Đã hoàn thành!" : "Đang tiến hành";
+    // Xác định trạng thái mới
+    const isDone = statusField.value === "Đang tiến hành";
+    const newStatus = isDone ? "Đã hoàn thành!" : "Đang tiến hành";
 
     // Cập nhật trạng thái trong embed
     const updatedEmbed = EmbedBuilder.from(oldEmbed)
@@ -517,10 +514,17 @@ if (interaction.isButton() && interaction.customId.startsWith("done-chapter-")) 
         )
       );
 
-    // Cập nhật tin nhắn với trạng thái mới
-    await mainMsg.edit({ embeds: [updatedEmbed] });
+    // 🔹 Tạo button mới tùy theo trạng thái
+    const newButton = new ButtonBuilder()
+      .setCustomId(`done-chapter-${mangaName}-${chapter}`)
+      .setLabel(isDone ? "Cancel" : "Done!")
+      .setStyle(isDone ? ButtonStyle.Danger : ButtonStyle.Success);
 
-    // Trả lời người dùng rằng trạng thái đã được cập nhật
+    const newRow = new ActionRowBuilder().addComponents(newButton);
+
+    // 🔹 Cập nhật message với embed + button mới
+    await mainMsg.edit({ embeds: [updatedEmbed], components: [newRow] });
+
     await interaction.reply({
       content: `✅ Trạng thái chương **${mangaName} - ${chapter}** đã được cập nhật thành **${newStatus}**.`,
       ephemeral: true,

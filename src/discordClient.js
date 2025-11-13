@@ -41,6 +41,14 @@ export function startBot() {
 
     // start express server
     startServer();
+
+	// 🟢 Giữ Render luôn thức (ngăn autosuspend)
+	setInterval(() => {
+	fetch("https://shinoriitrans.onrender.com")
+		.then(res => console.log(`[Ping] ${new Date().toISOString()} - ${res.status}`))
+		.catch(err => console.warn("[Ping lỗi]:", err.message));
+	}, 5 * 60 * 1000); // ping mỗi 5 phút
+
   });
 
   // welcome handler
